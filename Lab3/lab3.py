@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate
 import scipy.special as sc
 
-
-
 distr_type = ['Normal', 'Cauchy', 'Laplace', 'Poisson', 'Uniform']
 
 
@@ -44,24 +42,16 @@ def get_distr_func(d_name, x):
     return 0
 
 
-def quart(array, p):
-    new_array = np.sort(array)
-    k = len(array) * p
-    if k.is_integer():
-        return new_array[int(k)]
-    else:
-        return new_array[int(k) + 1]
-
-
-
 quantity = [20, 100]
 repeat = 1000
 
 if __name__ == '__main__':
-    headers = ["distribution name", "proportion of ejections"]
+    headers = ["distribution name", "proportion of ejections", "dispersion"]
     headers_th = ["distibution name", "q_1", "q_3", "x_1", "x_2", "p"]
     rows = []
     rows_th = []
+    prob = []
+    disp = []
     for dist_name in distr_type:
         array_20 = get_distr_samples(dist_name, quantity[0])
         array_100 = get_distr_samples(dist_name, quantity[1])
@@ -74,44 +64,25 @@ if __name__ == '__main__':
         plt.savefig(dist_name + '.png', format='png')
         plt.show()
 
+        array = []
+        for size in quantity:
+            out = np.zeros(repeat)
+            for i in range(0, repeat):
+                array = get_distr_samples(dist_name, size)
+                x = []
+                x.append(np.quantile(array, 0.25) - 1.5 * (np.quantile(array, 0.75) - np.quantile(array, 0.25)))
+                x.append(np.quantile(array, 0.75) + 1.5 * (np.quantile(array, 0.75) - np.quantile(array, 0.25)))
 
+                for k in range(0, size):
+                    if array[k] > x[1] or array[k] < x[0]:
+                        out[i] += 1
 
-    #for dist_name in distr_type:
-        count = [0, 0]
+            out /= size
+            prob = sum(out) / repeat
+            disp = (1 / repeat) * sum(out * out) - prob * prob
 
-        for i in range (0, repeat):
-            array_20 = get_distr_samples(dist_name, quantity[0])
-            array_100 = get_distr_samples(dist_name, quantity[1])
-
-            X_20 = []
-            X_100 = []
-
-            X_20.append(np.quantile(array_20, 0.25) - 1.5 * (np.quantile(array_20, 0.75) - np.quantile(array_20, 0.25)))
-            X_20.append(np.quantile(array_20, 0.75) + 1.5 * (np.quantile(array_20, 0.75) - np.quantile(array_20, 0.25)))
-
-            X_100.append(np.quantile(array_100, 0.25) - 1.5 * (np.quantile(array_100, 0.75) - np.quantile(array_100, 0.25)))
-            X_100.append(np.quantile(array_100, 0.75) + 1.5 * (np.quantile(array_100, 0.75) - np.quantile(array_100, 0.25)))
-
-
-            for k in range(0, 20):
-                if array_20[k] > X_20[1] or array_20[k] < X_20[0]:
-                    count[0] = count[0] + 1
-
-            for k in range(0, 100):
-                if array_100[k] > X_100[1] or array_100[k] < X_100[0]:
-                    count[1] = count[1] + 1
-
-        count[1] /= 1000
-        count[0] /= 1000
-        rows.append([dist_name + ", n = 20",  np.around(count[0] / 20, decimals=3)])
-        rows.append([dist_name + ", n = 100", np.around(count[1] / 100, decimals=3)])
+            rows.append([dist_name + ", n = " + str(size),  np.around(prob, decimals=3), np.around(disp, decimals=5)])
 
     print(tabulate(rows, headers, tablefmt="latex"))
     print("\n")
-
-
-    print(tabulate(rows_th, headers_th, tablefmt="latex"))
-    print("\n")
-
-
 
