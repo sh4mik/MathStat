@@ -36,6 +36,7 @@ if __name__ == '__main__':
         array_u = np.random.uniform(-np.sqrt(3), np.sqrt(3), size)
         if size == 100:
             n, bins, patches = plt.hist(array_u, bins, density=1, facecolor='grey', edgecolor='black', alpha=0.2)
+            distr = array_u
             plt.title(r'Uniform Distribution, N=%i' % size)
             plt.savefig("Uniform, 100" + ".png", format='png')
             plt.show()
@@ -44,7 +45,8 @@ if __name__ == '__main__':
 
     #check chi2
     s = 100
-    distr = stats.uniform.rvs(-np.sqrt(3), 2 * np.sqrt(3), size=100)
+    #distr = stats.uniform.rvs(-np.sqrt(3), 2 * np.sqrt(3), size=100)
+
     alpha = 0.05
     p = 1 - alpha
     k = 6
